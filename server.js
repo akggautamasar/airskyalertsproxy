@@ -10,9 +10,14 @@ app.use(express.json());
 const TG_TOKEN = process.env.TG_TOKEN || '';
 const PORT = process.env.PORT || 8000;
 
-// Your Cloudflare Tunnel URL
+// SMS Gateway Settings
 const SMS_GATEWAY_URL =
-  'https://reproduced-converter-wooden-nurse.trycloudflare.com/send';
+  process.env.SMS_GATEWAY_URL ||
+  'https://sms.akggautam.site/send';
+
+const SMS_API_KEY =
+  process.env.SMS_API_KEY ||
+  'u7X9kP3vN8mQ2rT6yW4zA1bC5dE7fG9';
 
 app.get('/', (req, res) =>
   res.json({ status: 'ok', service: 'SkyAlert Proxy' })
@@ -26,9 +31,10 @@ app.post('/sms', async (req, res) => {
   const { phones, message } = req.body;
 
   if (!phones || !message) {
-    return res
-      .status(400)
-      .json({ ok: false, error: 'phones and message required' });
+    return res.status(400).json({
+      ok: false,
+      error: 'phones and message required'
+    });
   }
 
   try {
@@ -39,6 +45,9 @@ app.post('/sms', async (req, res) => {
         message
       },
       {
+        headers: {
+          'X-API-Key': SMS_API_KEY
+        },
         timeout: 15000
       }
     );
@@ -68,9 +77,10 @@ app.post('/telegram', async (req, res) => {
   const token = req.headers['x-tg-token'] || TG_TOKEN;
 
   if (!token || !chat_id || !message) {
-    return res
-      .status(400)
-      .json({ ok: false, error: 'Missing fields' });
+    return res.status(400).json({
+      ok: false,
+      error: 'Missing fields'
+    });
   }
 
   try {
